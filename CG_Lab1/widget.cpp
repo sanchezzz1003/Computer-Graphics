@@ -7,6 +7,7 @@
 #include <QWheelEvent>
 #include <QString>
 #include <cstdlib>
+#include <QFont>
 
 //const double pi(4 * atan(1));
 
@@ -48,8 +49,10 @@ QPointF PolarToDecart(double r, double phi){
 }
 
 void Widget::zoom(double change){
-    if (scale > 1 || (scale == 1 && change > 0)){
-        scale *= (1+change/scale);
+    if (scale > 0 || (scale == 1 && change > 0)){
+        double buf = 15;
+        buf *= (1+change/buf);
+        scale *= buf/15;
     }
 }
 
@@ -66,7 +69,7 @@ void Widget::wheelEvent(QWheelEvent* events)
 void Widget::paintEvent(QPaintEvent*){
     const double rad(radius->value());
     const double st(0.01);
-    const double end(2 * pi + st);
+    const double end(pi + st);
     double wSize = min(width(),height())/400.0;
     double r(0);
 
@@ -84,13 +87,6 @@ void Widget::paintEvent(QPaintEvent*){
     ptr.setPen(mypen);
     const QPointF center(width() / 2.0, height() / 2.0);
 
-  /*  for (double t(st); t < end; t += st){
-        QPointF p2(cos(t*2*pi/360.0), sin(t*2*pi/360.0));
-        p2 *= rad;
-        ptr.drawLine(p1 + center, p2 + center);
-        p1 = p2;
-    }
-*/
     for (double phi(st); phi < end; phi+= st){
         r = rad*cos(3*phi);
         QPointF p2 = PolarToDecart(r, phi);
@@ -106,100 +102,119 @@ void Widget::paintEvent(QPaintEvent*){
     mypen.setWidth(1);
     ptr.setPen(mypen);
 
+    int j = 0;
+    char buffer [100];
+
     if(scale > 10){
         p1.setX(width()/2);
         p1.setY(height()/2-3);
         QPointF p2(width()/2, height()/2+3);
-        int j = 0;
-        char buffer [100];
-        for(int i = center.y(); i < center.y()+width(); i+=scale){
+        for(int i = center.y(); i < center.y()+width(); i+=scale*wSize/1.5){
             ptr.drawLine(p1,p2);
             itoa(j, buffer, 10);
             if (scale > 19 && j % 100 != 0)
                 ptr.drawText(p1, buffer);
             j += 10;
-            p1.setX(p1.x()+scale);
-            p2.setX(p2.x()+scale);
+            p1.setX(p1.x()+scale*wSize/1.5);
+            p2.setX(p2.x()+scale*wSize/1.5);
         }
         p1.setX(width()/2);
         p1.setY(height()/2-3);
         p2.setX(width()/2);
         p2.setY(height()/2+3);
         j = 0;
-        for(int i = center.y(); i > center.y()-width(); i-=scale){
+        for(int i = center.y(); i > center.y()-width(); i-=scale*wSize/1.5){
             ptr.drawLine(p1,p2);
             itoa(j, buffer, 10);
             if (scale > 19 && j % 100 != 0)
                 ptr.drawText(p1, buffer);
-            j += 10;
-            p1.setX(p1.x()-scale);
-            p2.setX(p2.x()-scale);
+            j -= 10;
+            p1.setX(p1.x()-scale*wSize/1.5);
+            p2.setX(p2.x()-scale*wSize/1.5);
         }
         p1.setX(width()/2-3);
         p1.setY(height()/2);
         p2.setX(width()/2+3);
         p2.setY(height()/2);
         j = 0;
-        for(int i = center.x(); i < center.x()+height(); i+=scale){
+        for(int i = center.x(); i < center.x()+height(); i+=scale*wSize/1.5){
             ptr.drawLine(p1,p2);
             itoa(j, buffer, 10);
             if (scale > 19 && j % 100 != 0)
                 ptr.drawText(p2, buffer);
-            j += 10;
-            p1.setY(p1.y()+scale);
-            p2.setY(p2.y()+scale);
+            j -= 10;
+            p1.setY(p1.y()+scale*wSize/1.5);
+            p2.setY(p2.y()+scale*wSize/1.5);
         }
         p1.setX(width()/2-3);
         p1.setY(height()/2);
         p2.setX(width()/2+3);
         p2.setY(height()/2);
         j = 0;
-        for(int i = center.x(); i > center.y()-height(); i-=scale){
+        for(int i = center.x(); i > center.y()-height(); i-=scale*wSize/1.5){
             ptr.drawLine(p1,p2);
             itoa(j, buffer, 10);
             if (scale > 19 && j % 100 != 0)
                 ptr.drawText(p2, buffer);
             j += 10;
-            p1.setY(p1.y()-scale);
-            p2.setY(p2.y()-scale);
+            p1.setY(p1.y()-scale*wSize/1.5);
+            p2.setY(p2.y()-scale*wSize/1.5);
         }
     }
     mypen.setWidth(2);
     ptr.setPen(mypen);
     p1.setX(width()/2);
     p1.setY(height()/2-4);
+    j = 0;
+
+    ptr.setFont(QFont("Times", 10, 100, 0));
     QPointF p2(width()/2, height()/2+4);
-    for(int i = center.y(); i < center.y()+width(); i+=scale*10){
+    for(int i = center.y(); i < center.y()+width(); i+=scale*10*wSize/1.5){
         ptr.drawLine(p1,p2);
-        p1.setX(p1.x()+scale*10);
-        p2.setX(p2.x()+scale*10);
+        itoa(j, buffer, 10);
+        ptr.drawText(p1, buffer);
+        j += 100;
+        p1.setX(p1.x()+scale*10*wSize/1.5);
+        p2.setX(p2.x()+scale*10*wSize/1.5);
     }
     p1.setX(width()/2);
     p1.setY(height()/2-4);
     p2.setX(width()/2);
     p2.setY(height()/2+4);
-    for(int i = center.y(); i > center.y()-width(); i-=scale*10){
+    j = 0;
+    for(int i = center.y(); i > center.y()-width(); i-=scale*10*wSize/1.5){
         ptr.drawLine(p1,p2);
-        p1.setX(p1.x()-scale*10);
-        p2.setX(p2.x()-scale*10);
+        itoa(j, buffer, 10);
+        ptr.drawText(p1, buffer);
+        j -= 100;
+        p1.setX(p1.x()-scale*10*wSize/1.5);
+        p2.setX(p2.x()-scale*10*wSize/1.5);
     }
     p1.setX(width()/2-4);
     p1.setY(height()/2);
     p2.setX(width()/2+4);
     p2.setY(height()/2);
-    for(int i = center.x(); i < center.x()+height(); i+=scale*10){
+    j = 0;
+    for(int i = center.x(); i < center.x()+height(); i+=scale*10*wSize/1.5){
         ptr.drawLine(p1,p2);
-        p1.setY(p1.y()+scale*10);
-        p2.setY(p2.y()+scale*10);
+        itoa(j, buffer, 10);
+        if (j != 0) ptr.drawText(p2, buffer);
+        j -= 100;
+        p1.setY(p1.y()+scale*10*wSize/1.5);
+        p2.setY(p2.y()+scale*10*wSize/1.5);
     }
     p1.setX(width()/2-4);
     p1.setY(height()/2);
     p2.setX(width()/2+4);
     p2.setY(height()/2);
-    for(int i = center.x(); i > center.y()-height(); i-=scale*10){
+    j = 0;
+    for(int i = center.x(); i > center.y()-height(); i-=scale*10*wSize/1.5){
         ptr.drawLine(p1,p2);
-        p1.setY(p1.y()-scale*10);
-        p2.setY(p2.y()-scale*10);
+        itoa(j, buffer, 10);
+        if (j != 0) ptr.drawText(p2, buffer);
+        j += 100;
+        p1.setY(p1.y()-scale*10*wSize/1.5);
+        p2.setY(p2.y()-scale*10*wSize/1.5);
     }
 }
 
